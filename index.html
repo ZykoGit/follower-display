@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Live Counter</title>
+<style>
+    body {
+        background: transparent;
+        margin: 0;
+        padding: 20px;
+        font-family: 'Segoe UI', sans-serif;
+        color: #7df9ff; /* cyan highlight */
+        text-shadow: 0 0 10px #00eaff, 0 0 20px #0077ff;
+        font-size: 32px;
+        line-height: 1.6;
+    }
+
+    .label {
+        color: #8ab4ff; /* soft purple-blue */
+        font-weight: 600;
+        text-shadow: 0 0 8px #4d5cff;
+    }
+
+    .value {
+        color: #7df9ff; /* cyan */
+        font-weight: bold;
+        text-shadow: 0 0 12px #00eaff, 0 0 25px #0077ff;
+    }
+</style>
+</head>
+<body>
+
+<div><span class="label">YouTube Subs:</span> <span id="yt" class="value">Loading...</span></div>
+<div><span class="label">Twitch Followers:</span> <span id="twitch" class="value">Loading...</span></div>
+<div><span class="label">Kick Followers:</span> <span id="kick" class="value">Loading...</span></div>
+
+<script>
+// ---------- YOUTUBE ----------
+async function loadYouTube() {
+    const apiKey = "YOUR_YOUTUBE_API_KEY";
+    const channelId = "UCAt17xPYd26i_12tzt8wXCg";
+
+    try {
+        const res = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`
+        );
+        const data = await res.json();
+        const subs = data.items?.[0]?.statistics?.subscriberCount ?? "N/A";
+        document.getElementById("yt").textContent = subs;
+    } catch {
+        document.getElementById("yt").textContent = "Error";
+    }
+}
+
+// ---------- TWITCH ----------
+async function loadTwitch() {
+    const username = "xXZykoTVXx";
+
+    try {
+        const res = await fetch(`https://decapi.me/twitch/followcount/${username}`);
+        const text = await res.text();
+        document.getElementById("twitch").textContent = text;
+    } catch {
+        document.getElementById("twitch").textContent = "Error";
+    }
+}
+
+// ---------- KICK ----------
+async function loadKick() {
+    const username = "xXZykoTVXx";
+
+    try {
+        const res = await fetch(`https://kick.com/api/v2/channels/${username}`);
+        const data = await res.json();
+        const followers = data.followersCount ?? "N/A";
+        document.getElementById("kick").textContent = followers;
+    } catch {
+        document.getElementById("kick").textContent = "Error";
+    }
+}
+
+// ---------- REFRESH ----------
+function refreshAll() {
+    loadYouTube();
+    loadTwitch();
+    loadKick();
+}
+
+refreshAll();
+setInterval(refreshAll, 5000); 
+</script>
+
+</body>
+</html>
