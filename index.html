@@ -182,17 +182,29 @@ async function loadKick() {
     const username = "xXZykoTVXx";
 
     try {
-        const res = await fetch(`https://api.kick.com/channel/${username}`);
+        
+        const targetUrl = `https://kick.com/api/v1/channels/${username}`;
+        
+        
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+        const res = await fetch(proxyUrl);
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const data = await res.json();
 
-        const followers = data.followers ?? "N/A";
+        
+        const followers = data.followersCount ?? "N/A";
 
         setAnimatedValue(document.getElementById("kick"), followers);
     } catch (e) {
+        console.error("Kick API Error:", e);
         document.getElementById("kick").textContent = "Error";
     }
 }
-
 
 
 // ---------- REFRESH ----------
