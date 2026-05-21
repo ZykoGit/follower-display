@@ -4,41 +4,153 @@
 <meta charset="UTF-8">
 <title>Live Counter</title>
 <style>
+    :root {
+        --yt-color: #ff0000;
+        --twitch-color: #9146ff;
+        --kick-color: #52ff52;
+        --text-main: #7df9ff;
+    }
+
     body {
         background: transparent;
         margin: 0;
         padding: 20px;
-        font-family: 'Segoe UI', sans-serif;
-        color: #7df9ff; /* cyan highlight */
-        text-shadow: 0 0 10px #00eaff, 0 0 20px #0077ff;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        color: var(--text-main);
         font-size: 32px;
         line-height: 1.6;
     }
 
+    .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .icon {
+        width: 40px;
+        height: 40px;
+        filter: drop-shadow(0 0 8px rgba(0,0,0,0.6));
+    }
+
     .label {
-        color: #8ab4ff; /* soft purple-blue */
         font-weight: 600;
-        text-shadow: 0 0 8px #4d5cff;
+        opacity: 0.9;
     }
 
     .value {
-        color: #7df9ff; /* cyan */
-        font-weight: bold;
-        text-shadow: 0 0 12px #00eaff, 0 0 25px #0077ff;
+        min-width: 60px;
+        text-align: right;
+        font-weight: 700;
+        margin-left: 8px;
+        display: inline-block;
+        transition: color 0.2s ease;
+    }
+
+    /* Brand glows */
+    .yt .value {
+        color: var(--yt-color);
+        text-shadow: 0 0 8px rgba(255,0,0,0.8), 0 0 18px rgba(255,80,80,0.9);
+    }
+    .twitch .value {
+        color: var(--twitch-color);
+        text-shadow: 0 0 8px rgba(145,70,255,0.8), 0 0 18px rgba(190,140,255,0.9);
+    }
+    .kick .value {
+        color: var(--kick-color);
+        text-shadow: 0 0 8px rgba(82,255,82,0.8), 0 0 18px rgba(160,255,160,0.9);
+    }
+
+    /* Icon glows */
+    .yt .icon {
+        filter: drop-shadow(0 0 10px rgba(255,0,0,0.9));
+    }
+    .twitch .icon {
+        filter: drop-shadow(0 0 10px rgba(145,70,255,0.9));
+    }
+    .kick .icon {
+        filter: drop-shadow(0 0 10px rgba(82,255,82,0.9));
+    }
+
+    /* Scroll / flip animation when number changes */
+    @keyframes flipUp {
+        0% {
+            transform: translateY(10px);
+            opacity: 0;
+        }
+        40% {
+            transform: translateY(-4px);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .changed {
+        animation: flipUp 0.35s ease-out;
     }
 </style>
 </head>
 <body>
 
-<div><span class="label">YouTube Subs:</span> <span id="yt" class="value">Loading...</span></div>
-<div><span class="label">Twitch Followers:</span> <span id="twitch" class="value">Loading...</span></div>
-<div><span class="label">Kick Followers:</span> <span id="kick" class="value">Loading...</span></div>
+<!-- YouTube -->
+<div class="row yt">
+    <!-- Classic YouTube SVG -->
+    <svg class="icon" viewBox="0 0 24 24">
+        <path fill="#FF0000" d="M21.8 8.001a2.75 2.75 0 0 0-1.93-1.947C18.23 5.5 12 5.5 12 5.5s-6.23 0-7.87.554A2.75 2.75 0 0 0 2.2 8.001C1.65 9.64 1.65 12 1.65 12s0 2.36.55 3.999a2.75 2.75 0 0 0 1.93 1.947C5.77 18.5 12 18.5 12 18.5s6.23 0 7.87-.554a2.75 2.75 0 0 0 1.93-1.947C22.35 14.36 22.35 12 22.35 12s0-2.36-.55-3.999Z"/>
+        <path fill="#FFFFFF" d="M10 9.75v4.5L14.5 12 10 9.75Z"/>
+    </svg>
+    <span class="label">YouTube Subs</span>
+    <span id="yt" class="value">Loading...</span>
+</div>
+
+<!-- Twitch -->
+<div class="row twitch">
+    <!-- Classic Twitch SVG -->
+    <svg class="icon" viewBox="0 0 24 24">
+        <path fill="#9146FF" d="M4 3h16v11.5l-4 4H11l-2.5 2.5H6.5V18H4V3Z"/>
+        <path fill="#FFFFFF" d="M9.5 7.5h1.75v4H9.5v-4Zm4.25 0H15.5v4h-1.75v-4Z"/>
+    </svg>
+    <span class="label">Twitch Followers</span>
+    <span id="twitch" class="value">Loading...</span>
+</div>
+
+<!-- Kick -->
+<div class="row kick">
+    <!-- Simple Kick SVG (K in a green square) -->
+    <svg class="icon" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="3" fill="#52FF52"/>
+        <path fill="#000000" d="M9 7h2v4.2L14.2 7H17l-4 4.6L17 17h-2.8L11 12.8V17H9V7Z"/>
+    </svg>
+    <span class="label">Kick Followers</span>
+    <span id="kick" class="value">Loading...</span>
+</div>
 
 <script>
+// ---------- helper: update with change animation ----------
+function setAnimatedValue(el, newValue) {
+    const oldValue = el.textContent.trim();
+    if (oldValue === String(newValue)) return; // no change, no animation
+
+    el.textContent = newValue;
+    el.classList.remove('changed');
+    // force reflow so animation can restart
+    void el.offsetWidth;
+    el.classList.add('changed');
+}
+
 // ---------- YOUTUBE ----------
 async function loadYouTube() {
-    const apiKey = "AIzaSyArOe2aqjM_BfPBucGQ36grj5nvHJ5k6I0"; // I put restrictions on this key, you can't do anything without my actual github and google account 🤣🤣
+    const apiKey = "AIzaSyArOe2aqjM_BfPBucGQ36grj5nvHJ5k6I0"; // the ley is protected so you can't even do anythin if you steal it 🤣🤣
     const channelId = "UCAt17xPYd26i_12tzt8wXCg";
+
+    if (!apiKey || apiKey === "YOUR_YOUTUBE_API_KEY") {
+        document.getElementById("yt").textContent = "No API key";
+        return;
+    }
 
     try {
         const res = await fetch(
@@ -46,8 +158,8 @@ async function loadYouTube() {
         );
         const data = await res.json();
         const subs = data.items?.[0]?.statistics?.subscriberCount ?? "N/A";
-        document.getElementById("yt").textContent = subs;
-    } catch {
+        setAnimatedValue(document.getElementById("yt"), subs);
+    } catch (e) {
         document.getElementById("yt").textContent = "Error";
     }
 }
@@ -58,23 +170,23 @@ async function loadTwitch() {
 
     try {
         const res = await fetch(`https://decapi.me/twitch/followcount/${username}`);
-        const text = await res.text();
-        document.getElementById("twitch").textContent = text;
-    } catch {
+        const text = (await res.text()).trim();
+        setAnimatedValue(document.getElementById("twitch"), text || "N/A");
+    } catch (e) {
         document.getElementById("twitch").textContent = "Error";
     }
 }
 
-// ---------- KICK ----------
+// ---------- KICK (v1 endpoint) ----------
 async function loadKick() {
     const username = "xXZykoTVXx";
 
     try {
-        const res = await fetch(`https://kick.com/api/v2/channels/${username}`);
+        const res = await fetch(`https://kick.com/api/v1/channels/${username}`);
         const data = await res.json();
-        const followers = data.followersCount ?? "N/A";
-        document.getElementById("kick").textContent = followers;
-    } catch {
+        const followers = data.followers_count ?? "N/A";
+        setAnimatedValue(document.getElementById("kick"), followers);
+    } catch (e) {
         document.getElementById("kick").textContent = "Error";
     }
 }
@@ -87,7 +199,7 @@ function refreshAll() {
 }
 
 refreshAll();
-setInterval(refreshAll, 5000); 
+setInterval(refreshAll, 5000); // update every 5 seconds
 </script>
 
 </body>
