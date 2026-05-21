@@ -182,23 +182,17 @@ async function loadKick() {
     const username = "xXZykoTVXx";
 
     try {
-        const res = await fetch(`https://kick.com/api/v2/channels/${username}`, {
-            headers: {
-                "Accept": "application/json",
-                "X-Requested-With": "XMLHttpRequest"
-            }
-        });
-
+        const res = await fetch(`https://api.kick.com/channel/${username}`);
         const data = await res.json();
 
-        
-        const followers = data.followersCount ?? "N/A";
+        const followers = data.followers ?? "N/A";
 
         setAnimatedValue(document.getElementById("kick"), followers);
     } catch (e) {
         document.getElementById("kick").textContent = "Error";
     }
 }
+
 
 
 // ---------- REFRESH ----------
