@@ -177,19 +177,29 @@ async function loadTwitch() {
     }
 }
 
-// ---------- KICK (v1 endpoint) ----------
+// ---------- KICK ----------
 async function loadKick() {
     const username = "xXZykoTVXx";
 
     try {
-        const res = await fetch(`https://kick.com/api/v1/channels/${username}`);
+        const res = await fetch(`https://kick.com/api/v2/channels/${username}`, {
+            headers: {
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
         const data = await res.json();
-        const followers = data.followers_count ?? "N/A";
+
+        
+        const followers = data.followersCount ?? "N/A";
+
         setAnimatedValue(document.getElementById("kick"), followers);
     } catch (e) {
         document.getElementById("kick").textContent = "Error";
     }
 }
+
 
 // ---------- REFRESH ----------
 function refreshAll() {
