@@ -144,10 +144,10 @@ function setAnimatedValue(el, newValue) {
 
 // ---------- YOUTUBE ----------
 async function loadYouTube() {
-    const apiKey = "AIzaSyArOe2aqjM_BfPBucGQ36grj5nvHJ5k6I0"; // the ley is protected so you can't even do anythin if you steal it 🤣🤣
+    const apiKey = "AIzaSyArOe2aqjM_BfPBucGQ36grj5nvHJ5k6I0"; // the key is protected so you can't even do anythin if you steal it 🤣🤣
     const channelId = "UCAt17xPYd26i_12tzt8wXCg";
 
-    if (!apiKey || apiKey === "YOUR_YOUTUBE_API_KEY") {
+    if (!apiKey || apiKey === "AIzaSyArOe2aqjM_BfPBucGQ36grj5nvHJ5k6I0") {
         document.getElementById("yt").textContent = "No API key";
         return;
     }
@@ -182,27 +182,20 @@ async function loadKick() {
     const username = "xXZykoTVXx";
 
     try {
-        const targetUrl = `https://kick.com/api/v1/channels/${username}`;
-
-        // More stable proxy than corsproxy.io
+        const targetUrl = `https://kick.com/api/v2/channels/${username}`;
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
-        const res = await fetch(proxyUrl, {
-            headers: {
-                "User-Agent": "Mozilla/5.0" // Kick blocks requests without this
-            }
-        });
+        const res = await fetch(proxyUrl);
 
         const text = await res.text();
 
-        // Detect HTML (proxy error, Cloudflare block, rate limit, etc.)
+        // Detect HTML (Cloudflare, proxy error, etc.)
         if (text.trim().startsWith("<")) {
             console.error("Kick API returned HTML instead of JSON");
             document.getElementById("kick").textContent = "Error";
             return;
         }
 
-        // Parse JSON safely
         let data;
         try {
             data = JSON.parse(text);
@@ -212,8 +205,8 @@ async function loadKick() {
             return;
         }
 
-        // Extract follower count
-        const followers = data.followersCount ?? "N/A";
+        // v2 API follower count
+        const followers = data?.data?.followers_count ?? "N/A";
 
         setAnimatedValue(document.getElementById("kick"), followers);
 
@@ -222,6 +215,7 @@ async function loadKick() {
         document.getElementById("kick").textContent = "Error";
     }
 }
+
 
 // ---------- REFRESH ----------
 function refreshAll() {
