@@ -182,30 +182,46 @@ async function loadKick() {
     const username = "xXZykoTVXx";
 
     try {
-        
         const targetUrl = `https://kick.com/api/v1/channels/${username}`;
-        
-        
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-        const res = await fetch(proxyUrl);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
+        // More stable proxy than corsproxy.io
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+        const res = await fetch(proxyUrl, {
+            headers: {
+                "User-Agent": "Mozilla/5.0" // Kick blocks requests without this
+            }
+        });
+
+        const text = await res.text();
+
+        // Detect HTML (proxy error, Cloudflare block, rate limit, etc.)
+        if (text.trim().startsWith("<")) {
+            console.error("Kick API returned HTML instead of JSON");
+            document.getElementById("kick").textContent = "Error";
+            return;
         }
 
-        const data = await res.json();
+        // Parse JSON safely
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (err) {
+            console.error("Kick JSON parse error:", err);
+            document.getElementById("kick").textContent = "Error";
+            return;
+        }
 
-        
+        // Extract follower count
         const followers = data.followersCount ?? "N/A";
 
         setAnimatedValue(document.getElementById("kick"), followers);
+
     } catch (e) {
         console.error("Kick API Error:", e);
         document.getElementById("kick").textContent = "Error";
     }
 }
-
 
 // ---------- REFRESH ----------
 function refreshAll() {
